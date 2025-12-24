@@ -3,6 +3,20 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 file(GLOB_RECURSE ${PROJECT}_SOURCES "*.cpp" "*.h" "*.rc")
 
+# Exclude platform-specific audio files
+if(${PROJECT}_AUDIO STREQUAL "NULL")
+    list(FILTER ${PROJECT}_SOURCES EXCLUDE REGEX ".*/audio/oal/.*")
+    list(FILTER ${PROJECT}_SOURCES EXCLUDE REGEX ".*/audio/eax/.*")
+    list(FILTER ${PROJECT}_SOURCES EXCLUDE REGEX ".*sampman_oal\\.cpp$")
+    list(FILTER ${PROJECT}_SOURCES EXCLUDE REGEX ".*sampman_miles\\.cpp$")
+endif()
+
+# Exclude platform-specific skeleton files for Emscripten
+if(EMSCRIPTEN)
+    list(FILTER ${PROJECT}_SOURCES EXCLUDE REGEX ".*/skel/glfw/.*")
+    list(FILTER ${PROJECT}_SOURCES EXCLUDE REGEX ".*/skel/win/.*")
+endif()
+
 function(header_directories RETURN_LIST)
     file(GLOB_RECURSE ALL_SRCS *.h *.cpp *.c)
     set(RELDIRS)
@@ -61,12 +75,17 @@ elseif(${PROJECT}_AUDIO STREQUAL "MSS")
     find_package(MilesSDK REQUIRED)
     target_compile_definitions(${EXECUTABLE} PRIVATE AUDIO_MSS)
     target_link_libraries(${EXECUTABLE} PRIVATE MilesSDK::MilesSDK)
+elseif(${PROJECT}_AUDIO STREQUAL "NULL")
+    # Null audio - no sound, uses sampman_null.cpp
+    message(STATUS "Building with NULL audio backend (no sound)")
 endif()
 
-find_package(mpg123 REQUIRED)
-target_link_libraries(${EXECUTABLE} PRIVATE
-    MPG123::libmpg123
-)
+if(NOT ${PROJECT}_AUDIO STREQUAL "NULL")
+    find_package(mpg123 REQUIRED)
+    target_link_libraries(${EXECUTABLE} PRIVATE
+        MPG123::libmpg123
+    )
+endif()
 if(${PROJECT}_WITH_OPUS)
     find_package(opusfile REQUIRED)
     target_link_libraries(${EXECUTABLE} PRIVATE

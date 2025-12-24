@@ -114,11 +114,6 @@ cSampleManager::SetMusicMasterVolume(uint8 nVolume)
 }
 
 void
-cSampleManager::SetMusicMasterVolume(uint8 nVolume)
-{
-}
-
-void
 cSampleManager::SetEffectsFadeVolume(uint8 nVolume)
 {
 }
@@ -381,3 +376,9 @@ int8 cSampleManager::AutoDetect3DProviders()
 }
 
 #endif
+
+void
+cSampleManager::SetMP3BoostVolume(uint8 nVolume)
+{
+}
+

@@ -1,5 +1,9 @@
 #include <time.h>
 
+#ifdef LIBRW_SDL2
+#include "glfw_stub.h"
+#endif
+
 // This is the common include for platform/renderer specific skeletons(glfw.cpp, win.cpp etc.) and using cross platform things (like Windows directories wrapper, platform specific global arrays etc.) 
 // Functions that's different on glfw and win but have same signature, should be located on platform.h.
 
