@@ -579,10 +579,8 @@ extern "C" int main(int argc, char *argv[])
         return -1;
     }
 
-    // Set OpenGL attributes for WebGL2
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    // For Emscripten, SDL2 handles WebGL context creation automatically
+    // We just need to set basic attributes
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
@@ -592,14 +590,14 @@ extern "C" int main(int argc, char *argv[])
         return -1;
     }
 
-    // Create window
+    // Create window - Emscripten SDL2 will use the canvas element
     gWindow = SDL_CreateWindow(
         RsGlobal.appName,
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
         RsGlobal.maximumWidth,
         RsGlobal.maximumHeight,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
+        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
     );
 
     if (!gWindow) {
@@ -611,10 +609,11 @@ extern "C" int main(int argc, char *argv[])
     gGLContext = SDL_GL_CreateContext(gWindow);
     if (!gGLContext) {
         printf("OpenGL context could not be created! SDL_Error: %s\n", SDL_GetError());
-        return -1;
+        // Try without explicit context on Emscripten - it may already be set up
+        printf("Continuing without explicit GL context...\n");
+    } else {
+        SDL_GL_MakeCurrent(gWindow, gGLContext);
     }
-
-    SDL_GL_MakeCurrent(gWindow, gGLContext);
 
     // Setup engine params
     openParams.width = RsGlobal.maximumWidth;
